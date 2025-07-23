@@ -6,18 +6,6 @@ provider "oci" {
   region           = var.region
 }
 
-variable "availability_domains" {
-  type    = list(string)
-  default = ["AD-1", "AD-2", "AD-3"]
-}
-
-variable "compartment_ocid" {}
-variable "tenancy_ocid" {}
-variable "user_ocid" {}
-variable "fingerprint" {}
-variable "private_key_path" {}
-variable "region" {}
-
 resource "oci_core_instance" "arm_instance" {
   count               = 1
   availability_domain = element(var.availability_domains, 0) # Initially AD-1
@@ -26,7 +14,7 @@ resource "oci_core_instance" "arm_instance" {
   shape = "VM.Standard.A1.Flex"
 
   shape_config {
-    ocpus = 1
+    ocpus         = 1
     memory_in_gbs = 6
   }
 
