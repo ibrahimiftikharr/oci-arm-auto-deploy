@@ -8,6 +8,8 @@ This repo tries to deploy a VM.Standard.A1.Flex ARM instance in Oracle Cloud Inf
 - Automatically retries deployment every 30 minutes
 - Cycles through Availability Domains (AD-1, AD-2, AD-3)
 
+#Triggered
+
 ## Setup Instructions
 
 1. Fork or clone this repo.
