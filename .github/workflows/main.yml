@@ -1,4 +1,4 @@
-name: OCI ARM Auto Retry
+name: OCI ARM Auto Retry v2
 
 on:
   schedule:
