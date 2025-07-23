@@ -2,7 +2,7 @@ terraform {
   required_providers {
     oci = {
       source  = "hashicorp/oci"
-      version = "7.10.0"
+      version = ">= 4.0.0"
     }
   }
 }
@@ -11,86 +11,27 @@ provider "oci" {
   tenancy_ocid     = var.tenancy_ocid
   user_ocid        = var.user_ocid
   fingerprint      = var.fingerprint
-  private_key_path = var.private_key_path
+  private_key      = var.private_key
   region           = var.region
 }
 
+# Get Availability Domains
 data "oci_identity_availability_domains" "ads" {
-  compartment_id = var.tenancy_ocid
-}
-
-data "oci_core_images" "ubuntu_image" {
-  compartment_id                 = var.compartment_ocid
-  operating_system               = "Canonical Ubuntu"
-  operating_system_version       = "22.04"
-  shape                          = "VM.Standard.A1.Flex"
-  sort_by                        = "TIMECREATED"
-  sort_order                     = "DESC"
-}
-
-resource "oci_core_virtual_network" "default_vcn" {
-  cidr_block     = "10.0.0.0/16"
   compartment_id = var.compartment_ocid
-  display_name   = "auto-vcn"
-  dns_label      = "auto-vcn"
 }
 
-resource "oci_core_subnet" "default_subnet" {
-  cidr_block        = "10.0.1.0/24"
-  compartment_id    = var.compartment_ocid
-  vcn_id            = oci_core_virtual_network.default_vcn.id
-  display_name      = "auto-subnet"
-  dns_label         = "auto-subnet"
-  prohibit_public_ip_on_vnic = false
+# Choose the first available AD
+locals {
+  selected_ad = data.oci_identity_availability_domains.ads.availability_domains[0].name
 }
 
-resource "oci_core_instance" "always_free_instance" {
-  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
-  compartment_id      = var.compartment_ocid
-  shape               = "VM.Standard.A1.Flex"
-  display_name        = "auto-retry-arm-instance"
-
-  shape_config {
-    ocpus         = 1
-    memory_in_gbs = 6
-  }
-
-  source_details {
-    source_type = "image"
-    source_id   = data.oci_core_images.ubuntu_image.images[0].id
-  }
-
-  create_vnic_details {
-    assign_public_ip = true
-    subnet_id        = oci_core_subnet.default_subnet.id
-  }
-
-  metadata = {
-    ssh_authorized_keys = var.ssh_public_key
-  }
+# Get the latest Ubuntu image
+data "oci_core_images" "ubuntu_image" {
+  compartment_id           = var.compartment_ocid
+  operating_system         = "Canonical Ubuntu"
+  operating_system_version = "22.04"
+  shape                    = var.instance_shape
 }
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Variables
-variable "tenancy_ocid" {
-  type = string
-}
-variable "user_ocid" {
-  type = string
-}
-variable "fingerprint" {
-  type = string
-}
-variable "private_key_path" {
-  type = string
-}
-variable "region" {
-  type = string
-}
-variable "compartment_ocid" {
-  type = string
-}
-variable "ssh_public_key" {
-  type = string
-  description = "The contents of your SSH public key, e.g. from ~/.ssh/id_rsa.pub"
-}
+# VCN
+resource "oci_core_
