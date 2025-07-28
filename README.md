@@ -1,4 +1,4 @@
-# OCI Always Free ARM Auto Retry Deployment
+# OCI ARM Auto Retry Deployment
 
 This repo tries to deploy a VM.Standard.A1.Flex ARM instance in Oracle Cloud Infrastructure using Terraform and GitHub Actions.
 
